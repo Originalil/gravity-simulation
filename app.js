@@ -1,5 +1,4 @@
-
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, createElement: h } = React;
 
 const GravityPlayground = () => {
   const canvasRef = useRef(null);
@@ -66,6 +65,7 @@ const GravityPlayground = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let animationId;
     let lastTime = performance.now();
@@ -96,7 +96,6 @@ const GravityPlayground = () => {
       const bounce = 0.5;
       const mass1 = obj1.mass || 1;
       const mass2 = obj2.mass || 1;
-      const totalMass = mass1 + mass2;
       
       const impulse = (-(1 + bounce) * velAlongNormal) / (1/mass1 + 1/mass2);
       
@@ -359,146 +358,125 @@ const GravityPlayground = () => {
     setObjects([]);
   };
 
-  return (
-    <div className="flex h-screen bg-gray-900 overflow-hidden">
-      <div className="flex-1 p-4 flex flex-col">
-        <h1 className="text-2xl text-white mb-3">Gravity Physics Playground</h1>
-        <canvas
-          ref={canvasRef}
-          width={750}
-          height={500}
-          className="border-2 border-gray-700 bg-black"
-        />
-        <p className="text-gray-400 mt-2 text-sm">A/D or Arrow Keys = Move | Spacebar = Jump | Higher mass = push objects harder!</p>
-      </div>
-
-      <div className="w-96 bg-gray-800 p-5 overflow-y-auto">
-        <div className="space-y-4">
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-white font-bold mb-3 text-lg">Controls</h3>
-            <button 
-              onClick={reset} 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold mb-2 transition"
-            >
-              Reset Position
-            </button>
-            <label className="flex items-center text-white cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showTrails}
-                onChange={(e) => setShowTrails(e.target.checked)}
-                className="mr-2 w-4 h-4"
-              />
-              Show Trails
-            </label>
-          </div>
-
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-white font-bold mb-3 text-lg">Player Settings</h3>
-            
-            <label className="text-gray-300 text-sm block mb-2 font-semibold">
-              Speed: {playerSpeed.toFixed(2)}
-            </label>
-            <input
-              type="range"
-              min="0.1"
-              max="1"
-              step="0.05"
-              value={playerSpeed}
-              onChange={(e) => setPlayerSpeed(parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-600 rounded-lg mb-3"
-            />
-
-            <label className="text-gray-300 text-sm block mb-2 font-semibold">
-              Mass: {playerMass.toFixed(1)}
-            </label>
-            <input
-              type="range"
-              min="0.5"
-              max="5"
-              step="0.5"
-              value={playerMass}
-              onChange={(e) => setPlayerMass(parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-600 rounded-lg"
-            />
-            <p className="text-gray-400 text-xs mt-2">Higher mass = push objects more!</p>
-          </div>
-
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-white font-bold mb-3 text-lg">Gravity</h3>
-            <select
-              value={selectedPlanet}
-              onChange={(e) => handlePlanetChange(e.target.value)}
-              className="w-full bg-gray-900 text-white p-2.5 rounded-lg border-2 border-gray-600 focus:border-blue-500 focus:outline-none text-sm mb-2"
-            >
-              {Object.keys(planets).map(key => (
-                <option key={key} value={key}>
-                  {planets[key].name} - {planets[key].gravity}
-                </option>
-              ))}
-            </select>
-            <p className="text-gray-300 text-sm">Current: {gravity.toFixed(2)}</p>
-          </div>
-
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-white font-bold mb-3 text-lg">Custom Gravity</h3>
-            <input
-              type="range"
-              min="-3"
-              max="3"
-              step="0.05"
-              value={gravity}
-              onChange={(e) => {
-                const val = parseFloat(e.target.value);
-                setGravity(val);
-                setCustomValue(val.toString());
-                setSelectedPlanet('custom');
-              }}
-              className="w-full h-2 bg-gray-600 rounded-lg mb-3"
-            />
-            <div className="flex gap-2">
-              <input
-                type="number"
-                value={customValue}
-                onChange={(e) => setCustomValue(e.target.value)}
-                step="0.1"
-                className="flex-1 bg-gray-900 text-white p-2 rounded-lg border-2 border-gray-600 focus:border-blue-500 focus:outline-none text-sm"
-              />
-              <button
-                onClick={applyCustomGravity}
-                className="px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition text-sm"
-              >
-                Set
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-white font-bold mb-3 text-lg">Add Objects</h3>
-            <button
-              onClick={() => addObject('rock')}
-              className="w-full bg-amber-700 hover:bg-amber-800 text-white py-2.5 rounded-lg font-semibold mb-2 transition"
-            >
-              Add Rock
-            </button>
-            <button
-              onClick={() => addObject('square')}
-              className="w-full bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-lg font-semibold mb-2 transition"
-            >
-              Add Square
-            </button>
-            <button
-              onClick={clearObjects}
-              className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2.5 rounded-lg font-semibold transition"
-            >
-              Clear All ({objects.length})
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  return h('div', { className: 'flex h-screen bg-gray-900 overflow-hidden' },
+    h('div', { className: 'flex-1 p-4 flex flex-col' },
+      h('h1', { className: 'text-2xl text-white mb-3' }, 'Gravity Physics Playground'),
+      h('canvas', {
+        ref: canvasRef,
+        width: 750,
+        height: 500,
+        className: 'border-2 border-gray-700 bg-black'
+      }),
+      h('p', { className: 'text-gray-400 mt-2 text-sm' }, 'A/D or Arrow Keys = Move | Spacebar = Jump | Higher mass = push objects harder!')
+    ),
+    h('div', { className: 'w-96 bg-gray-800 p-5 overflow-y-auto' },
+      h('div', { className: 'space-y-4' },
+        h('div', { className: 'bg-gray-700 p-4 rounded-lg' },
+          h('h3', { className: 'text-white font-bold mb-3 text-lg' }, 'Controls'),
+          h('button', {
+            onClick: reset,
+            className: 'w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold mb-2 transition'
+          }, 'Reset Position'),
+          h('label', { className: 'flex items-center text-white cursor-pointer' },
+            h('input', {
+              type: 'checkbox',
+              checked: showTrails,
+              onChange: (e) => setShowTrails(e.target.checked),
+              className: 'mr-2 w-4 h-4'
+            }),
+            'Show Trails'
+          )
+        ),
+        h('div', { className: 'bg-gray-700 p-4 rounded-lg' },
+          h('h3', { className: 'text-white font-bold mb-3 text-lg' }, 'Player Settings'),
+          h('label', { className: 'text-gray-300 text-sm block mb-2 font-semibold' }, 
+            'Speed: ' + playerSpeed.toFixed(2)
+          ),
+          h('input', {
+            type: 'range',
+            min: '0.1',
+            max: '1',
+            step: '0.05',
+            value: playerSpeed,
+            onChange: (e) => setPlayerSpeed(parseFloat(e.target.value)),
+            className: 'w-full h-2 bg-gray-600 rounded-lg mb-3'
+          }),
+          h('label', { className: 'text-gray-300 text-sm block mb-2 font-semibold' },
+            'Mass: ' + playerMass.toFixed(1)
+          ),
+          h('input', {
+            type: 'range',
+            min: '0.5',
+            max: '5',
+            step: '0.5',
+            value: playerMass,
+            onChange: (e) => setPlayerMass(parseFloat(e.target.value)),
+            className: 'w-full h-2 bg-gray-600 rounded-lg'
+          }),
+          h('p', { className: 'text-gray-400 text-xs mt-2' }, 'Higher mass = push objects more!')
+        ),
+        h('div', { className: 'bg-gray-700 p-4 rounded-lg' },
+          h('h3', { className: 'text-white font-bold mb-3 text-lg' }, 'Gravity'),
+          h('select', {
+            value: selectedPlanet,
+            onChange: (e) => handlePlanetChange(e.target.value),
+            className: 'w-full bg-gray-900 text-white p-2.5 rounded-lg border-2 border-gray-600 focus:border-blue-500 focus:outline-none text-sm mb-2'
+          }, Object.keys(planets).map(key =>
+            h('option', { key: key, value: key },
+              planets[key].name + ' - ' + planets[key].gravity
+            )
+          )),
+          h('p', { className: 'text-gray-300 text-sm' }, 'Current: ' + gravity.toFixed(2))
+        ),
+        h('div', { className: 'bg-gray-700 p-4 rounded-lg' },
+          h('h3', { className: 'text-white font-bold mb-3 text-lg' }, 'Custom Gravity'),
+          h('input', {
+            type: 'range',
+            min: '-3',
+            max: '3',
+            step: '0.05',
+            value: gravity,
+            onChange: (e) => {
+              const val = parseFloat(e.target.value);
+              setGravity(val);
+              setCustomValue(val.toString());
+              setSelectedPlanet('custom');
+            },
+            className: 'w-full h-2 bg-gray-600 rounded-lg mb-3'
+          }),
+          h('div', { className: 'flex gap-2' },
+            h('input', {
+              type: 'number',
+              value: customValue,
+              onChange: (e) => setCustomValue(e.target.value),
+              step: '0.1',
+              className: 'flex-1 bg-gray-900 text-white p-2 rounded-lg border-2 border-gray-600 focus:border-blue-500 focus:outline-none text-sm'
+            }),
+            h('button', {
+              onClick: applyCustomGravity,
+              className: 'px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition text-sm'
+            }, 'Set')
+          )
+        ),
+        h('div', { className: 'bg-gray-700 p-4 rounded-lg' },
+          h('h3', { className: 'text-white font-bold mb-3 text-lg' }, 'Add Objects'),
+          h('button', {
+            onClick: () => addObject('rock'),
+            className: 'w-full bg-amber-700 hover:bg-amber-800 text-white py-2.5 rounded-lg font-semibold mb-2 transition'
+          }, 'Add Rock'),
+          h('button', {
+            onClick: () => addObject('square'),
+            className: 'w-full bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-lg font-semibold mb-2 transition'
+          }, 'Add Square'),
+          h('button', {
+            onClick: clearObjects,
+            className: 'w-full bg-gray-600 hover:bg-gray-500 text-white py-2.5 rounded-lg font-semibold transition'
+          }, 'Clear All (' + objects.length + ')')
+        )
+      )
+    )
   );
 };
 
 // Render the app
-ReactDOM.render(<GravityPlayground />, document.getElementById('root'));
+ReactDOM.render(h(GravityPlayground), document.getElementById('root'));
