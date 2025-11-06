@@ -678,7 +678,31 @@
             setObjects([]);
           };
 
-    
+     return h('div', { className: 'container' },
+            h('div', { className: 'main-content' },
+              h('h1', { className: 'title' }, 'Gravity Physics Playground'),
+              h('canvas', {
+                ref: canvasRef,
+                width: 750,
+                height: 500
+              }),
+              h('p', { className: 'instructions' }, 'A/D or Arrow Keys = Move | Spacebar = Jump | Higher mass = push objects harder')
+            ),
+            h('div', { className: 'sidebar' },
+              h('div', { className: 'section' },
+                h('h3', { className: 'section-title' }, 'Controls'),
+                h('button', {
+                  onClick: reset,
+                  className: 'btn-blue'
+                }, 'Reset Position'),
+                h('label', { className: 'checkbox-label' },
+                  h('input', {
+                    type: 'checkbox',
+                    checked: showTrails,
+                    onChange: (e) => setShowTrails(e.target.checked)
+                  }),
+                  'Show Trails'
+                )
               ),
               h('div', { className: 'section' },
                 h('h3', { className: 'section-title' }, 'Player Settings'),
